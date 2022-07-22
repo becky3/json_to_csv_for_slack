@@ -4,6 +4,10 @@ import os
 import glob
 import json
 
+class UserInfo:
+    display_name = ""
+    real_name = ""
+
 argv = sys.argv
 
 TEXT_KEY = 'text'
@@ -14,26 +18,40 @@ DISPLAY_NAME_KEY = 'display_name'
 FILES_KEY = 'files'
 URL_KEY = 'url_private'
 
+USER_FILE_NAME = 'users.json'
+
+def json_file_to_data(full_path):
+        f = open(full_path, 'r')
+
+        converted = json.load(f)
+
+        f.close()
+
+        return converted
+
+
+# def get_user_list(source_dir):
+
 
 if len(argv) < 2:
     print('Please add argument of work directory')
     exit()
 
-work_dir = argv[1]
+source_dir = argv[1]
 
-print(f'workDir > {work_dir}')
+print(f'workDir > {source_dir}')
 
-output_dir = f'{work_dir}/../slack_csv_output'
+output_dir = f'{source_dir}/../slack_csv_output'
 
 print(f'Create output dir > {output_dir}/')
 os.makedirs(output_dir, exist_ok=True)
 
-channels = sorted(os.listdir(path=work_dir))
+channels = sorted(os.listdir(path=source_dir))
 
 for channel in channels:
     print(channel)
 
-    json_files = sorted(glob.glob(f"{work_dir}/{channel}/*.json"))
+    json_files = sorted(glob.glob(f"{source_dir}/{channel}/*.json"))
     lines = "date,first_name,real_name,display_name,text,files\n"
 
     for file_full_path in json_files:
@@ -42,11 +60,7 @@ for channel in channels:
 
         print(f'\t{date}')
 
-        f = open(file_full_path, 'r')
-
-        json_dic = json.load(f)
-
-        f.close()
+        json_dic = json_file_to_data(file_full_path)
 
         for item in json_dic:
 
@@ -78,6 +92,3 @@ for channel in channels:
     f = open(out_file_path, 'w')
     f.write(lines)
     f.close()
-
-
-
