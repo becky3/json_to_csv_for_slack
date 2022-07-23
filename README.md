@@ -1,8 +1,7 @@
 # json_to_csv_for_slack
 Convert to csv from exported json data in slack service.
 
-Qiitaに日本語でも記事を書いています
-https://qiita.com/beckyJPN/items/4c94a35587d51a0fba0c
+[Qiita](https://qiita.com/beckyJPN/items/4c94a35587d51a0fba0c)に日本語でも記事を書いています。
 
 # Environment
 
