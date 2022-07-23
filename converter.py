@@ -46,7 +46,7 @@ def get_users(source_dir):
     return users
 
 # 1メッセージのjson辞書データをカンマ区切りの1行データに変換
-def get_line_text(item):
+def get_line_text(users, item):
 
     text = f'{item[TEXT_KEY]}'.replace('"', '\"')
     name = ''
@@ -123,7 +123,7 @@ for channel in channels:
             if not TEXT_KEY in item.keys():
                 continue
 
-            lines += get_line_text(item)
+            lines += get_line_text(users, item)
 
         print(f'\t{date} ({len(json_dic)})')
 
