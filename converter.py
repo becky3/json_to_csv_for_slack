@@ -4,21 +4,21 @@ import os
 import glob
 import json
 
-class UserInfo:
-    display_name = ""
-    real_name = ""
+# defines =====================
 
-argv = sys.argv
-
+ID_KEY = 'id'
 TEXT_KEY = 'text'
-PROFILE_KEY = 'user_profile'
-FIRST_NAME_KEY = 'first_name'
+USER_KEY = 'user'
+PROFILE_KEY = 'profile'
 REAL_NAME_KEY = 'real_name'
 DISPLAY_NAME_KEY = 'display_name'
 FILES_KEY = 'files'
 URL_KEY = 'url_private'
 
+
 USER_FILE_NAME = 'users.json'
+
+# functions =====================
 
 def json_file_to_data(full_path):
         f = open(full_path, 'r')
@@ -30,8 +30,23 @@ def json_file_to_data(full_path):
         return converted
 
 
-# def get_user_list(source_dir):
+def get_users(source_dir):
+    users_json = json_file_to_data(source_dir)
+    users = {}
 
+    for user in users_json:
+        
+        name = user[PROFILE_KEY][DISPLAY_NAME_KEY]
+        if not name:
+            name = user[PROFILE_KEY][REAL_NAME_KEY]
+        id = user[ID_KEY]
+        users[id] = name
+
+    return users
+
+# core logics =====================
+
+argv = sys.argv
 
 if len(argv) < 2:
     print('Please add argument of work directory')
@@ -47,18 +62,20 @@ print(f'Create output dir > {output_dir}/')
 os.makedirs(output_dir, exist_ok=True)
 
 channels = sorted(os.listdir(path=source_dir))
+channels = [x for x in channels if not x.endswith('.json')]
+
+users = get_users(f'{source_dir}/{USER_FILE_NAME}')
 
 for channel in channels:
-    print(channel)
+
+    print(f'[{channel}]')
 
     json_files = sorted(glob.glob(f"{source_dir}/{channel}/*.json"))
-    lines = "date,first_name,real_name,display_name,text,files\n"
+    lines = "date,name,text,files\n"
 
     for file_full_path in json_files:
         file_name = os.path.split(file_full_path)[1]
         date = file_name.replace('.json', '')
-
-        print(f'\t{date}')
 
         json_dic = json_file_to_data(file_full_path)
 
@@ -68,27 +85,25 @@ for channel in channels:
                 continue
 
             text = f'{item[TEXT_KEY]}'.replace('"', '\"')
-            first_name = ""
-            real_name = ""
-            display_name = ""
-
-            if (item.keys() >= { PROFILE_KEY }):
-                first_name = item[PROFILE_KEY][FIRST_NAME_KEY]
-                real_name = item[PROFILE_KEY][REAL_NAME_KEY]
-                display_name = item[PROFILE_KEY][DISPLAY_NAME_KEY]
-
-            urls = ""
+            name = ''
+            if USER_KEY in item.keys():
+                user_id = item[USER_KEY]
+                if user_id in users.keys():
+                    name = users[user_id]
+            urls = ''
 
             if (item.keys() >= {FILES_KEY}):
                 for attachmentFile in item[FILES_KEY]:
                     url = f"{attachmentFile[URL_KEY]}".replace('"', '\"')
                     urls += f'{url}\n'
 
-            lines += f'{date},{first_name},{real_name},{display_name},"{item[TEXT_KEY]}","{urls}"\n'
+            lines += f'{date},{name},"{item[TEXT_KEY]}","{urls}"\n'
 
-    print(lines)
+        print(f'\t{date} ({len(json_dic)})')
 
     out_file_path = f"{output_dir}/{channel}.csv"
     f = open(out_file_path, 'w')
     f.write(lines)
     f.close()
+
+print(f'{len(channels)} channels fineshed.')
