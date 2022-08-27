@@ -60,6 +60,10 @@ def get_line_text(users, item):
 
     if FILES_KEY in item.keys():
         for attachmentFile in item[FILES_KEY]:
+
+            if not URL_KEY in attachmentFile.keys():
+                continue
+
             url = f"{attachmentFile[URL_KEY]}".replace('"', '\"')
             urls += f'{url}\n'
 
